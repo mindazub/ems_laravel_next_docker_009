@@ -6,12 +6,41 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiPost } from "@/lib/api";
 import { clearAuthSession } from "@/lib/auth";
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  ClipboardCheck,
+  FileText,
+  Languages,
+  Leaf,
+  Monitor,
+  Settings,
+  Users,
+  Workflow,
+  type LucideIcon,
+} from "lucide-react";
 
 type NavItem = {
   href: string;
   label: string;
-  icon?: string;
+  icon?: "plants" | "reports" | "diagrams" | "customers" | "approvals" | "queue" | "analytics" | "translations" | "docs" | "settings" | "activity" | "users";
   roles: Array<"admin" | "staff" | "manager" | "installer" | "customer">;
+};
+
+const navIconMap: Record<NonNullable<NavItem["icon"]>, LucideIcon> = {
+  plants: Leaf,
+  reports: FileText,
+  diagrams: Workflow,
+  customers: Users,
+  approvals: ClipboardCheck,
+  queue: Monitor,
+  analytics: BarChart3,
+  translations: Languages,
+  docs: BookOpen,
+  settings: Settings,
+  activity: Activity,
+  users: Users,
 };
 
 const AUTH_STORAGE_KEY = "ems.auth.session";
@@ -38,23 +67,23 @@ function getAuthSessionSnapshot() {
 }
 
 const navItems: NavItem[] = [
-  { href: "/plants", label: "My Plants", icon: "/brand/icons/plants.png", roles: ["customer"] },
-  { href: "/reports", label: "Reports", icon: "/brand/icons/document.png", roles: ["customer"] },
-  { href: "/plants", label: "Plants", icon: "/brand/icons/plants.png", roles: ["admin", "staff", "manager", "installer"] },
-  { href: "/diagrams", label: "Diagrams", icon: "/brand/icons/controllers.png", roles: ["admin", "staff", "manager", "installer", "customer"] },
-  { href: "/reports", label: "Reports", icon: "/brand/icons/document.png", roles: ["admin", "staff", "manager"] },
-  { href: "/staff/customers", label: "Customers", icon: "/brand/icons/customers.png", roles: ["admin", "staff"] },
-  { href: "/admin/user-plants", label: "Plant Approvals", icon: "/brand/icons/controllers.png", roles: ["admin", "staff"] },
-  { href: "/admin/queue", label: "Queue Monitor", icon: "/brand/icons/monitoring.png", roles: ["admin", "staff"] },
-  { href: "/admin/analytics", label: "Analytics", icon: "/brand/icons/analytics.png", roles: ["admin", "staff"] },
-  { href: "/admin/translations", label: "Translations", icon: "/brand/icons/translations.png", roles: ["admin", "staff"] },
-  { href: "/admin/plant-name-mappings", label: "Plant Name Mappings", icon: "/brand/icons/document.png", roles: ["admin"] },
-  { href: "/admin/docs", label: "Docs Admin", icon: "/brand/icons/document.png", roles: ["admin", "staff"] },
-  { href: "/admin/api-docs", label: "API Docs", icon: "/brand/icons/document.png", roles: ["admin", "staff"] },
-  { href: "/docs", label: "Documentation", icon: "/brand/icons/document.png", roles: ["admin", "staff", "manager", "installer", "customer"] },
-  { href: "/settings", label: "Settings", icon: "/brand/icons/settings.png", roles: ["admin", "staff", "manager", "installer", "customer"] },
-  { href: "/admin/activity", label: "Admin Activity", icon: "/brand/icons/activity.png", roles: ["admin", "staff"] },
-  { href: "/admin/users", label: "Users", icon: "/brand/icons/team.png", roles: ["admin", "staff"] },
+  { href: "/plants", label: "My Plants", icon: "plants", roles: ["customer"] },
+  { href: "/reports", label: "Reports", icon: "reports", roles: ["customer"] },
+  { href: "/plants", label: "Plants", icon: "plants", roles: ["admin", "staff", "manager", "installer"] },
+  { href: "/diagrams", label: "Diagrams", icon: "diagrams", roles: ["admin", "staff", "manager", "installer", "customer"] },
+  { href: "/reports", label: "Reports", icon: "reports", roles: ["admin", "staff", "manager"] },
+  { href: "/staff/customers", label: "Customers", icon: "customers", roles: ["admin", "staff"] },
+  { href: "/admin/user-plants", label: "Plant Approvals", icon: "approvals", roles: ["admin", "staff"] },
+  { href: "/admin/queue", label: "Queue Monitor", icon: "queue", roles: ["admin", "staff"] },
+  { href: "/admin/analytics", label: "Analytics", icon: "analytics", roles: ["admin", "staff"] },
+  { href: "/admin/translations", label: "Translations", icon: "translations", roles: ["admin", "staff"] },
+  { href: "/admin/plant-name-mappings", label: "Plant Name Mappings", icon: "docs", roles: ["admin"] },
+  { href: "/admin/docs", label: "Docs Admin", icon: "docs", roles: ["admin", "staff"] },
+  { href: "/admin/api-docs", label: "API Docs", icon: "docs", roles: ["admin", "staff"] },
+  { href: "/docs", label: "Documentation", icon: "docs", roles: ["admin", "staff", "manager", "installer", "customer"] },
+  { href: "/settings", label: "Settings", icon: "settings", roles: ["admin", "staff", "manager", "installer", "customer"] },
+  { href: "/admin/activity", label: "Admin Activity", icon: "activity", roles: ["admin", "staff"] },
+  { href: "/admin/users", label: "Users", icon: "users", roles: ["admin", "staff"] },
 ];
 
 export function EmsShell({ children, title }: { children: React.ReactNode; title: string }) {
@@ -126,14 +155,15 @@ export function EmsShell({ children, title }: { children: React.ReactNode; title
               <Image src="/brand/edis-logo.svg" alt="EDIS" width={160} height={38} priority className="h-auto w-auto" />
             </div>
             <nav className="space-y-2">
-              {filtered.map((item) => (
-                <Link key={item.href} href={item.href} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${pathname.startsWith(item.href) ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-                  {item.icon ? (
-                    <Image src={item.icon} alt="" width={18} height={18} className="h-[18px] w-[18px] object-contain opacity-80" aria-hidden />
-                  ) : null}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {filtered.map((item) => {
+                const Icon = item.icon ? navIconMap[item.icon] : null;
+                return (
+                  <Link key={item.href} href={item.href} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${pathname.startsWith(item.href) ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
+                    {Icon ? <Icon size={18} className="opacity-80" aria-hidden /> : null}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </nav>
             <div className="mt-auto pt-6 text-xs text-slate-500">
               <div className="mb-3 flex items-center gap-2 rounded-md border border-slate-200 p-2 dark:border-slate-700">

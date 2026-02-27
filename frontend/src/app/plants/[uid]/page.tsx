@@ -15,7 +15,7 @@ import {
   type ChartDataset,
   type ChartOptions,
 } from "chart.js";
-import Image from "next/image";
+import { Bell, Cpu, Info, MapPin } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
@@ -530,7 +530,7 @@ export default function PlantDetailPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
-                <Image src="/brand/icons/analytics.png" alt="" width={18} height={18} className="h-[18px] w-[18px] opacity-80" aria-hidden />
+                <Info size={18} className="opacity-80" aria-hidden />
                 <span>General Info</span>
               </h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
@@ -549,7 +549,7 @@ export default function PlantDetailPage() {
 
             <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Image src="/brand/icons/plants.png" alt="" width={18} height={18} className="h-[18px] w-[18px] opacity-80" aria-hidden />
+                <MapPin size={18} className="opacity-80" aria-hidden />
                 <span>Map Location</span>
               </h2>
               <PlantMapPreview latitude={metadata?.latitude} longitude={metadata?.longitude} label={title} />
@@ -568,7 +568,7 @@ export default function PlantDetailPage() {
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Image src="/brand/icons/analytics.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  <Info size={15} className="opacity-80" aria-hidden />
                   Data
                 </span>
               </button>
@@ -582,7 +582,7 @@ export default function PlantDetailPage() {
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Image src="/brand/icons/monitoring.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  <Bell size={15} className="opacity-80" aria-hidden />
                   Alerts
                 </span>
               </button>
@@ -596,7 +596,7 @@ export default function PlantDetailPage() {
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Image src="/brand/icons/controllers.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  <Cpu size={15} className="opacity-80" aria-hidden />
                   Controllers and Devices
                 </span>
               </button>

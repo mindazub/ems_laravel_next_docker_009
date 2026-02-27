@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { EmsShell } from "@/components/ems-shell";
 import { PlantMapPreview } from "@/components/plant-map-preview";
 import { apiGet } from "@/lib/api";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Leaf } from "lucide-react";
 
 type Plant = {
   id: number;
@@ -481,19 +481,19 @@ export default function PlantsPage() {
               return (
                 <article key={plant.uid} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                   <PlantMapPreview latitude={plant.latitude} longitude={plant.longitude} label={plantLabel} />
-                  <div className="p-3">
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <h3 className="flex items-center gap-2 truncate font-semibold">
-                        <Image src="/brand/icons/plants.png" alt="" width={20} height={20} className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+                  <div className="px-3 pb-3 pt-4">
+                    <div className="mb-2.5 flex items-center justify-between gap-2">
+                      <h3 className="flex items-center gap-2 truncate text-base font-semibold">
+                        <Leaf size={20} className="shrink-0 opacity-80" aria-hidden />
                         <span className="truncate">{plantLabel}</span>
                       </h3>
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-sm font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         {plant.status || "Unknown"}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500">Capacity: {formatCapacity(plant.capacity)}</p>
-                    <p className="mt-1 text-xs text-slate-500">Last updated: {formatLastUpdate(plant.last_update_iso_utc)}</p>
-                    <p className="mt-1 truncate text-xs text-slate-500">UID: {plant.uid}</p>
+                    <p className="text-sm text-slate-500">Capacity: {formatCapacity(plant.capacity)}</p>
+                    <p className="mt-1 text-sm text-slate-500">Last updated: {formatLastUpdate(plant.last_update_iso_utc)}</p>
+                    <p className="mt-1 truncate text-sm text-slate-500">UID: {plant.uid}</p>
                     <Link
                       href={`/plants/${plant.uid}`}
                       prefetch={true}
@@ -503,7 +503,7 @@ export default function PlantsPage() {
                       onFocus={() => {
                         void prefetchPlantOverview(plant.uid);
                       }}
-                      className="mt-3 block rounded-md bg-slate-900 px-3 py-2 text-center text-xs font-medium text-white dark:bg-slate-200 dark:text-slate-900"
+                      className="mt-3 block rounded-md bg-slate-900 px-3 py-2 text-center text-sm font-medium text-white dark:bg-slate-200 dark:text-slate-900"
                     >
                       Plant Overview
                     </Link>
