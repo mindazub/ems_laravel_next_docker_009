@@ -15,6 +15,7 @@ import {
   type ChartDataset,
   type ChartOptions,
 } from "chart.js";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
@@ -528,7 +529,10 @@ export default function PlantDetailPage() {
         <div className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
             <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-4 text-sm font-semibold">General Info</h2>
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+                <Image src="/brand/icons/analytics.png" alt="" width={18} height={18} className="h-[18px] w-[18px] opacity-80" aria-hidden />
+                <span>General Info</span>
+              </h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
                 <dt className="text-slate-500 dark:text-slate-400">Capacity</dt>
                 <dd className="justify-self-end font-medium">{formatCapacity(metadata?.capacity)}</dd>
@@ -544,7 +548,10 @@ export default function PlantDetailPage() {
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-3 text-sm font-semibold">Map Location</h2>
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                <Image src="/brand/icons/plants.png" alt="" width={18} height={18} className="h-[18px] w-[18px] opacity-80" aria-hidden />
+                <span>Map Location</span>
+              </h2>
               <PlantMapPreview latitude={metadata?.latitude} longitude={metadata?.longitude} label={title} />
             </section>
           </div>
@@ -560,7 +567,10 @@ export default function PlantDetailPage() {
                     : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 }`}
               >
-                Data
+                <span className="inline-flex items-center gap-1.5">
+                  <Image src="/brand/icons/analytics.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  Data
+                </span>
               </button>
               <button
                 type="button"
@@ -571,7 +581,10 @@ export default function PlantDetailPage() {
                     : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 }`}
               >
-                Alerts
+                <span className="inline-flex items-center gap-1.5">
+                  <Image src="/brand/icons/monitoring.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  Alerts
+                </span>
               </button>
               <button
                 type="button"
@@ -582,7 +595,10 @@ export default function PlantDetailPage() {
                     : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 }`}
               >
-                Controllers and Devices
+                <span className="inline-flex items-center gap-1.5">
+                  <Image src="/brand/icons/controllers.png" alt="" width={15} height={15} className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                  Controllers and Devices
+                </span>
               </button>
             </div>
           </section>

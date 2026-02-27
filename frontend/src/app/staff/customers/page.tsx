@@ -27,8 +27,11 @@ export default function CustomersPage() {
   const [rekvizitaiUrl, setRekvizitaiUrl] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
 
   const load = async () => {
+    setIsLoading(true);
     try {
       const [customersPayload, plantsPayload] = await Promise.all([
         apiGet<Customer[]>("/customers"),
@@ -40,13 +43,17 @@ export default function CustomersPage() {
       setError(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load customers.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const loadAssignments = async (customerId: number) => {
     setSelectedCustomerId(customerId);
+    setIsAssignmentsLoading(true);
     const payload = await apiGet<CustomerPlantsPayload>(`/customers/${customerId}/plants`);
     setAssigned(payload.assigned_plant_uids ?? []);
+    setIsAssignmentsLoading(false);
   };
 
   useEffect(() => {
@@ -62,12 +69,14 @@ export default function CustomersPage() {
         setCustomers(customersPayload);
         setPlants(plantsPayload.local);
         setError(null);
+        setIsLoading(false);
       })
       .catch((err) => {
         if (!active) {
           return;
         }
         setError(err instanceof ApiError ? err.message : "Failed to load customers.");
+        setIsLoading(false);
       });
 
     return () => {
@@ -102,6 +111,32 @@ export default function CustomersPage() {
 
   return (
     <EmsShell title="Customers">
+      {isLoading ? (
+        <div className="animate-pulse space-y-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="grid gap-2 md:grid-cols-3">
+              <div className="h-10 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="h-10 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="h-10 rounded bg-slate-200 dark:bg-slate-700" />
+            </div>
+          </section>
+          <div className="grid gap-4 md:grid-cols-2">
+            <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-3 h-4 w-28 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="space-y-2">
+                <div className="h-16 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+                <div className="h-16 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+                <div className="h-16 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+              </div>
+            </section>
+            <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-3 h-4 w-36 rounded bg-slate-200 dark:bg-slate-700" />
+              <div className="h-56 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+            </section>
+          </div>
+        </div>
+      ) : (
+      <>
       <form className="mb-4 flex gap-2" onSubmit={createCustomer}>
         <input className="rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" value={name} onChange={(event) => setName(event.target.value)} placeholder="New customer name" required />
         <input
@@ -145,6 +180,13 @@ export default function CustomersPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="mb-3 text-sm font-semibold">Plant assignments</h2>
           {selectedCustomerId ? (
+            isAssignmentsLoading ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-14 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+                <div className="h-14 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+                <div className="h-14 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+              </div>
+            ) : (
             <div className="space-y-2 text-sm">
               {plants.map((plant) => {
                 const isAssigned = assigned.includes(plant.uid);
@@ -163,6 +205,7 @@ export default function CustomersPage() {
                 );
               })}
             </div>
+            )
           ) : (
             <p className="text-slate-500">Select a customer to manage assignments.</p>
           )}
@@ -171,6 +214,8 @@ export default function CustomersPage() {
 
       {message && <p className="mt-2 text-sm text-emerald-600">{message}</p>}
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </>
+      )}
     </EmsShell>
   );
 }

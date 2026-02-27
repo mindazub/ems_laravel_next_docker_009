@@ -10,14 +10,18 @@ export default function TranslationsPage() {
   const [items, setItems] = useState<Translation[]>([]);
   const [form, setForm] = useState({ key: "", locale: "en", value: "" });
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const load = async () => {
+    setIsLoading(true);
     try {
       const payload = await apiGet<Translation[]>("/translations");
       setItems(payload);
       setError(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load translations.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -30,12 +34,14 @@ export default function TranslationsPage() {
         }
         setItems(payload);
         setError(null);
+        setIsLoading(false);
       })
       .catch((err) => {
         if (!active) {
           return;
         }
         setError(err instanceof ApiError ? err.message : "Failed to load translations.");
+        setIsLoading(false);
       });
 
     return () => {
@@ -60,6 +66,13 @@ export default function TranslationsPage() {
       </form>
 
       <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        {isLoading ? (
+          <div className="space-y-2 animate-pulse">
+            <div className="h-20 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+            <div className="h-20 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+            <div className="h-20 rounded border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-800" />
+          </div>
+        ) : (
         <div className="space-y-2 text-sm">
           {items.slice(0, 200).map((item) => (
             <div key={item.id} className="rounded border border-slate-200 p-2 dark:border-slate-800">
@@ -70,6 +83,7 @@ export default function TranslationsPage() {
           ))}
           {!items.length && <p className="text-slate-500">No translations.</p>}
         </div>
+        )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </section>
     </EmsShell>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { EmsShell } from "@/components/ems-shell";
 import { PlantMapPreview } from "@/components/plant-map-preview";
 import { apiGet } from "@/lib/api";
@@ -482,7 +483,10 @@ export default function PlantsPage() {
                   <PlantMapPreview latitude={plant.latitude} longitude={plant.longitude} label={plantLabel} />
                   <div className="p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <h3 className="truncate font-semibold">{plantLabel}</h3>
+                      <h3 className="flex items-center gap-2 truncate font-semibold">
+                        <Image src="/brand/icons/plants.png" alt="" width={20} height={20} className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
+                        <span className="truncate">{plantLabel}</span>
+                      </h3>
                       <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                         {plant.status || "Unknown"}
                       </span>
