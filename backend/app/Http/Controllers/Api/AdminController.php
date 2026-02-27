@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlantNameMapping;
 use App\Models\QueueJobLog;
 use App\Models\User;
 use App\Models\UserActivity;
+use Database\Seeders\PlantNameMappingSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +66,26 @@ class AdminController extends Controller
             'users_by_role' => User::query()->select('role', DB::raw('count(*) as total'))->groupBy('role')->get(),
             'activity_by_type' => UserActivity::query()->select('activity_type', DB::raw('count(*) as total'))->groupBy('activity_type')->orderByDesc('total')->limit(20)->get(),
             'activity_by_device' => UserActivity::query()->select('device', DB::raw('count(*) as total'))->groupBy('device')->orderByDesc('total')->get(),
+        ]);
+    }
+
+    public function plantNameMappings()
+    {
+        return response()->json(
+            PlantNameMapping::query()
+                ->select(['id', 'plant_uuid', 'display_name', 'description', 'is_active', 'created_at', 'updated_at'])
+                ->orderBy('display_name')
+                ->get()
+        );
+    }
+
+    public function seedPlantNameMappings()
+    {
+        (new PlantNameMappingSeeder())->run();
+
+        return response()->json([
+            'message' => 'Plant name mappings seeded successfully.',
+            'total' => PlantNameMapping::query()->count(),
         ]);
     }
 

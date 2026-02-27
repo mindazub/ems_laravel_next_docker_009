@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 class V2PlantApiClient
 {
@@ -16,11 +17,15 @@ class V2PlantApiClient
             throw new RuntimeException('EMS V2 API configuration is missing. Set EMS_V2_API_BASE_URL and EMS_V2_API_TOKEN.');
         }
 
-        $response = Http::withToken($token)
-            ->acceptJson()
-            ->retry((int) config('plants.v2.retry_times', 2), 250)
-            ->timeout((int) config('plants.v2.timeout_seconds', 20))
-            ->get(rtrim($baseUrl, '/').'/'.ltrim($endpoint, '/'), $query);
+        try {
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->retry((int) config('plants.v2.retry_times', 2), 250)
+                ->timeout((int) config('plants.v2.timeout_seconds', 20))
+                ->get(rtrim($baseUrl, '/').'/'.ltrim($endpoint, '/'), $query);
+        } catch (Throwable $exception) {
+            throw new RuntimeException('V2 API request failed: '.$exception->getMessage(), 0, $exception);
+        }
 
         if ($response->failed()) {
             throw new RuntimeException('V2 API request failed: '.$response->status().' '.$response->body());

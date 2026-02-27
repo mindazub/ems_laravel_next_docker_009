@@ -94,6 +94,8 @@ Route::prefix('v1')->middleware('api.user')->group(function () {
         Route::get('/queue', [AdminController::class, 'queue']);
         Route::get('/analytics', [AdminController::class, 'analytics']);
         Route::get('/api-docs', [AdminController::class, 'apiDocs']);
+        Route::get('/plant-name-mappings', [AdminController::class, 'plantNameMappings']);
+        Route::post('/plant-name-mappings/seed', [AdminController::class, 'seedPlantNameMappings']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::put('/users/{id}', [AdminController::class, 'updateUser']);
         Route::post('/queue/restart', [AdminController::class, 'restartQueues']);

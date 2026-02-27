@@ -12,7 +12,7 @@ type Customer = {
   last_scraped_at?: string | null;
   is_scraping?: boolean;
 };
-type Plant = { uid: string; plant_name?: string | null };
+type Plant = { uid: string; display_name?: string | null; plant_name?: string | null };
 
 type CustomerPlantsPayload = {
   assigned_plant_uids: string[];
@@ -32,7 +32,7 @@ export default function CustomersPage() {
     try {
       const [customersPayload, plantsPayload] = await Promise.all([
         apiGet<Customer[]>("/customers"),
-        apiGet<{ local: Array<{ uid: string; plant_name?: string | null }> }>("/plants/list"),
+        apiGet<{ local: Array<{ uid: string; display_name?: string | null; plant_name?: string | null }> }>("/plants/list"),
       ]);
 
       setCustomers(customersPayload);
@@ -53,7 +53,7 @@ export default function CustomersPage() {
     let active = true;
     Promise.all([
       apiGet<Customer[]>("/customers"),
-      apiGet<{ local: Array<{ uid: string; plant_name?: string | null }> }>("/plants/list"),
+      apiGet<{ local: Array<{ uid: string; display_name?: string | null; plant_name?: string | null }> }>("/plants/list"),
     ])
       .then(([customersPayload, plantsPayload]) => {
         if (!active) {
@@ -151,7 +151,7 @@ export default function CustomersPage() {
                 return (
                   <div key={plant.uid} className="flex items-center justify-between rounded border border-slate-200 px-3 py-2 dark:border-slate-800">
                     <div>
-                      <div className="font-medium">{plant.plant_name ?? plant.uid}</div>
+                      <div className="font-medium">{plant.display_name ?? plant.uid}</div>
                       <div className="text-slate-500">{plant.uid}</div>
                     </div>
                     {isAssigned ? (

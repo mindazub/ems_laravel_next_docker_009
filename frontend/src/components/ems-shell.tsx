@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiPost } from "@/lib/api";
-import { clearAuthSession, getAuthSession } from "@/lib/auth";
+import { clearAuthSession } from "@/lib/auth";
 
 type NavItem = {
   href: string;
@@ -13,8 +13,33 @@ type NavItem = {
   roles: Array<"admin" | "staff" | "manager" | "installer" | "customer">;
 };
 
+const AUTH_STORAGE_KEY = "ems.auth.session";
+
+function subscribeAuthSession(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const listener = () => onStoreChange();
+  window.addEventListener("storage", listener);
+
+  return () => {
+    window.removeEventListener("storage", listener);
+  };
+}
+
+function getAuthSessionSnapshot() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.localStorage.getItem(AUTH_STORAGE_KEY) ?? "";
+}
+
 const navItems: NavItem[] = [
-  { href: "/plants", label: "Plants", roles: ["admin", "staff", "manager", "installer", "customer"] },
+  { href: "/plants", label: "My Plants", roles: ["customer"] },
+  { href: "/reports", label: "Reports", roles: ["customer"] },
+  { href: "/plants", label: "Plants", roles: ["admin", "staff", "manager", "installer"] },
   { href: "/diagrams", label: "Diagrams", roles: ["admin", "staff", "manager", "installer", "customer"] },
   { href: "/reports", label: "Reports", roles: ["admin", "staff", "manager"] },
   { href: "/staff/customers", label: "Customers", roles: ["admin", "staff"] },
@@ -22,6 +47,7 @@ const navItems: NavItem[] = [
   { href: "/admin/queue", label: "Queue Monitor", roles: ["admin", "staff"] },
   { href: "/admin/analytics", label: "Analytics", roles: ["admin", "staff"] },
   { href: "/admin/translations", label: "Translations", roles: ["admin", "staff"] },
+  { href: "/admin/plant-name-mappings", label: "Plant Name Mappings", roles: ["admin"] },
   { href: "/admin/docs", label: "Docs Admin", roles: ["admin", "staff"] },
   { href: "/admin/api-docs", label: "API Docs", roles: ["admin", "staff"] },
   { href: "/docs", label: "Documentation", roles: ["admin", "staff", "manager", "installer", "customer"] },
@@ -33,22 +59,53 @@ const navItems: NavItem[] = [
 export function EmsShell({ children, title }: { children: React.ReactNode; title: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [role, setRole] = useState<"admin" | "staff" | "manager" | "installer" | "customer">(() => {
-    const session = getAuthSession();
-    return session?.user.role ?? "admin";
-  });
+  const authSessionRaw = useSyncExternalStore(
+    subscribeAuthSession,
+    getAuthSessionSnapshot,
+    () => "",
+  );
+  const session = useMemo(() => {
+    if (!authSessionRaw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(authSessionRaw) as { token: string; user: { name: string; email: string; role?: "admin" | "staff" | "manager" | "installer" | "customer" } };
+    } catch {
+      return null;
+    }
+  }, [authSessionRaw]);
+  const role = session?.user.role ?? "customer";
   const [dark, setDark] = useState(false);
   const [useBrandFont, setUseBrandFont] = useState(false);
 
   useEffect(() => {
-    const session = getAuthSession();
     if (!session?.token) {
       router.replace("/auth/login");
-      return;
     }
-  }, [router]);
+  }, [router, session?.token]);
 
-  const filtered = useMemo(() => navItems.filter((item) => item.roles.includes(role)), [role]);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add("dark");
+      root.classList.remove("light");
+      window.localStorage.setItem("ems.theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      window.localStorage.setItem("ems.theme", "light");
+    }
+  }, [dark]);
+
+  const filtered = navItems.filter((item) => item.roles.includes(role));
+  const userName = session?.user.name ?? "User";
+  const userInitials = userName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleLogout = async () => {
     try {
@@ -61,22 +118,11 @@ export function EmsShell({ children, title }: { children: React.ReactNode; title
   };
 
   return (
-    <div className={dark ? "dark" : ""}>
-      <div className={`min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 ${useBrandFont ? "font-brand" : "font-sans"}`}>
+    <div className={`min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 ${useBrandFont ? "font-brand" : "font-sans"}`}>
         <div className="grid min-h-screen grid-cols-[280px_1fr]">
-          <aside className="border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <aside className="flex flex-col border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-6 flex items-center gap-3">
-              <Image src="/brand/edis-logo.svg" alt="EDIS" width={160} height={38} priority />
-            </div>
-            <div className="mb-4 space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Role</label>
-              <select value={role} onChange={(event) => setRole(event.target.value as typeof role)} className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800">
-                <option value="admin">admin</option>
-                <option value="staff">staff</option>
-                <option value="manager">manager</option>
-                <option value="installer">installer</option>
-                <option value="customer">customer</option>
-              </select>
+              <Image src="/brand/edis-logo.svg" alt="EDIS" width={160} height={38} priority className="h-auto w-auto" />
             </div>
             <nav className="space-y-2">
               {filtered.map((item) => (
@@ -85,11 +131,20 @@ export function EmsShell({ children, title }: { children: React.ReactNode; title
                 </Link>
               ))}
             </nav>
-            <div className="mt-6 space-y-2 text-xs text-slate-500">
-              <button className="w-full rounded border border-slate-300 px-2 py-1 dark:border-slate-700" onClick={() => setDark((prev) => !prev)}>
+            <div className="mt-auto pt-6 text-xs text-slate-500">
+              <div className="mb-3 flex items-center gap-2 rounded-md border border-slate-200 p-2 dark:border-slate-700">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
+                  {userInitials || "U"}
+                </div>
+                <div className="truncate">
+                  <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{userName}</div>
+                  <div className="truncate text-[11px]">{session?.user.email}</div>
+                </div>
+              </div>
+              <button className="mb-2 w-full rounded border border-slate-300 px-2 py-1 dark:border-slate-700" onClick={() => setDark((prev) => !prev)}>
                 Toggle {dark ? "Light" : "Dark"}
               </button>
-              <button className="w-full rounded border border-slate-300 px-2 py-1 dark:border-slate-700" onClick={() => setUseBrandFont((prev) => !prev)}>
+              <button className="mb-2 w-full rounded border border-slate-300 px-2 py-1 dark:border-slate-700" onClick={() => setUseBrandFont((prev) => !prev)}>
                 Toggle {useBrandFont ? "Default" : "Arial Nova"} font
               </button>
               <button className="w-full rounded border border-slate-300 px-2 py-1 dark:border-slate-700" onClick={handleLogout}>
@@ -105,7 +160,6 @@ export function EmsShell({ children, title }: { children: React.ReactNode; title
             {children}
           </main>
         </div>
-      </div>
     </div>
   );
 }
