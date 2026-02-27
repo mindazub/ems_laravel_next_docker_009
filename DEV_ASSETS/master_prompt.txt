@@ -1,0 +1,342 @@
+# Master Prompt: Rebuild This EMS App on a New Server (Full Feature Parity)
+
+Copy/paste this entire prompt into GitHub Copilot (agent mode) in a fresh repository/workspace.
+
+---
+
+You are an expert full-stack Laravel + React migration engineer.
+
+## Mission
+
+Rebuild an Energy Management System (EMS) web app with **full functional parity** from an existing source project, including:
+
+- all pages and user flows
+- all API endpoints and data contracts
+- all roles/permissions and access rules
+- all charting and data visualization behavior
+- all background jobs/queues/schedulers
+- all export/reporting/email features
+- all docs and operational scripts
+
+Target deployment is a **different server/environment**, so preserve behavior but modernize configuration and secrets handling (no hardcoded credentials).
+
+## Critical Rules
+
+1. **Do not skip modules**. If uncertain, inspect source code and docs before implementing.
+2. **Source-of-truth priority**:
+   - Priority A: runtime code (routes/controllers/pages/components/services/models/migrations)
+   - Priority B: docs in `docs/`
+   - If conflict exists, follow code behavior and document the mismatch.
+3. **No hardcoded secrets or external tokens**. Use environment variables.
+4. Preserve all existing UX behavior and feature scope; do not remove functionality unless impossible.
+5. Use best practices for AI-agent execution:
+   - explicit phased plan
+   - per-phase checklist and acceptance tests
+   - small verifiable commits
+   - keep a migration log
+6. If a behavior exists in code but appears deprecated, still preserve it unless it is clearly dead and unreachable.
+
+## Required Tech Stack (Parity Target)
+
+- Backend: Laravel (v12-family or v13 or latest version), PHP 8.2+ (latest version, but suitable and comapatible with laravel api version), use as API, put in /backend folder
+- Frontend: Nextjs + Typescript (latest version), put it as separate app in /frontend folder
+- Styling/UI: Tailwind CSS + shadcn/ui-style components
+- Bundler: Vite
+- Charts/visualization: Chart.js/react-chartjs-2 + Recharts (both are used)
+- Diagraming/visual: SCADA + JSON diagrams + map components
+- Queues/jobs/scheduling: Laravel queues + scheduled commands/jobs
+- Database: support existing relational schema and migrations; keep compatibility with SQLite/PostgreSQL usage patterns
+
+## Folders Structure 
+
+In the root folder there is:
+- /backend and /frontend Folders
+- docker-compose file
+- prompt.txt file (read only, do not edit it)
+- start.ps1 (windows)
+- start.sh (linux based systems)
+- first use sqlite, please find latest db in folder /database, later we will migrate to postgres in docker with all current data
+- brandbook for styling, logos, fonts (make me able to switch between this font in the brandbook and default shadcn ui font if it is possible)
+- screenshots, please use this folder throughout the development process for design of pages
+- 
+## Source Project Mapping to Rebuild
+
+Recreate these major modules end-to-end:
+
+1. **Authentication + Security**
+   - login/register/reset password/email verification
+   - 2FA setup/challenge/recovery codes
+   - profile/password/settings pages
+2. **RBAC / Access Control**
+   - roles include: `admin`, `staff`, `manager`, `installer`, `customer`
+   - admin-only and staff-only route protection
+3. **Plants Domain**
+   - authenticated plant list and plant detail
+   - V2 external API proxy integration for plant list/view/events/reaggregated data
+   - plant custom naming and assignment filtering by user/customer role
+4. **Charts & Data Views**
+   - energy live chart
+   - battery power + pricing chart
+   - load/solar prediction chart
+   - planned active power chart
+   - chart graph/data toggles, date navigation, and aggregated views (day/week/month/year style behavior)
+5. **Diagrams**
+   - SCADA diagram CRUD (admin-managed)
+   - JSON diagram APIs and rendering
+   - per-plant diagram retrieval and display
+6. **Reports & Exports**
+   - CSV/XLSX/PDF export flows
+   - immediate download/send-now email actions
+   - recurring scheduled email reports
+   - chart export helpers and report generation utilities
+7. **Email Templates**
+   - report email templates + assignments
+   - WYSIWYG email templates + assignments + test send
+8. **Customers & Assignments**
+   - customer CRUD (staff/admin area)
+   - plant assignment/unassignment to customer
+   - Rekvizitai scraping integration workflow
+9. **Admin Analytics & Activity**
+   - activity log page + export/filtering
+   - analytics pages (IP/geographic/device/engagement/overview)
+10. **Translations / i18n**
+   - translation management UI + public translation API endpoint
+11. **Queue Monitoring / Worker Health**
+   - dashboard for worker status, queue stats, failed jobs, restarts, retries, scheduling
+   - queue job logs tracking
+12. **Database Backup System**
+   - backup settings CRUD
+   - manual create/list/download/delete/restore backup APIs
+   - scheduled backup job behavior
+13. **Documentation System**
+   - admin documentation management (CRUD + visibility)
+   - authenticated documentation viewer pages
+   - API docs pages
+
+## Route/API Parity Expectations
+
+Implement equivalent route groups and APIs (names can be adapted if justified, but behavior must match):
+
+- Web route groups for:
+  - authenticated app shell
+  - admin-only management pages
+  - staff/admin feature pages
+  - settings pages
+  - docs viewer
+- API route groups for:
+  - plants endpoints (`list`, `show`, `view`, `events`, `reaggregated-data`)
+  - json/scada diagrams
+  - user-plants approval flow
+  - email-jobs lifecycle endpoints
+  - report/wysiwyg template endpoints + assignments
+  - translations endpoint
+  - backups endpoints
+  - users/staff support endpoints
+
+## External Integrations to Preserve
+
+1. **External V2 Plant API** (currently proxied through backend):
+   - plant list
+   - plant view data
+   - plant events
+   - reaggregated chart data
+2. **Mail delivery providers** (env-configurable)
+3. **Realtime stack hooks** (Echo/Pusher/Reverb-related dependencies are present)
+4. **Rekvizitai scraping flow** for customer enrichment
+
+All external base URLs/tokens must be moved to environment variables + config files.
+
+## Immediate Bootstrap Values (Use So It Works Right After Build)
+
+Use the following V2 API values as the initial defaults during rebuild so plant-related features work immediately after setup:
+
+- `EMS_V2_API_BASE_URL=http://185.69.53.225:5001/v2`
+- `EMS_V2_API_TOKEN=f9c2f80e1c0e5b6a3f7f40e6f2e9c9d0af7eaabc6b37a4d9728e26452b81fc13`
+
+Add these to `.env` and wire them through config (do not hardcode in controllers/services):
+
+```env
+# External V2 Plants API (bootstrap defaults for immediate connectivity)
+EMS_V2_API_BASE_URL=http://185.69.53.225:5001/v2
+EMS_V2_API_TOKEN=f9c2f80e1c0e5b6a3f7f40e6f2e9c9d0af7eaabc6b37a4d9728e26452b81fc13
+```
+
+Implementation requirements:
+
+1. Create config keys (example: `config/plants.php`):
+   - `v2.base_url = env('EMS_V2_API_BASE_URL')`
+   - `v2.token = env('EMS_V2_API_TOKEN')`
+2. Replace any direct URL/token usage with `config(...)` reads.
+3. Fail fast with clear error messages if env values are missing.
+4. Keep these defaults for bootstrap parity, and document token rotation for production hardening.
+
+## Data Model / Migration Parity
+
+Recreate schema coverage for core tables and relations used by features, including at least:
+
+- users (+ role/status/2FA/customer linkage fields)
+- user profiles
+- plants/controllers/main feeds/devices/aggregated snapshots/events
+- scada/json diagrams
+- user activities/activity settings
+- customers and customer-plant assignments
+- user plant submissions/approvals
+- translations
+- email jobs
+- report/wysiwyg templates + assignment tables
+- queue job logs
+- backup settings
+- documentation + pivots/visibility relations
+- plant name mappings
+
+Preserve constraints, indexes, and enum-like behavior where used.
+
+## Frontend Parity Requirements
+
+Recreate pages, components, and layouts for:
+
+- auth pages
+- dashboard and plants pages
+- reports page
+- admin analytics/activity/queue monitor/translations/docs/API docs
+- staff customers/email templates
+- settings pages (appearance/security/activity-log/database-backup/preferences)
+- diagrams pages
+
+Preserve:
+
+- sidebar navigation grouped by role
+- badges/counters (active jobs counts, alerts count)
+- dark mode support
+- date navigation patterns
+- loading/empty/error states
+
+## Agent Execution Plan (Must Follow)
+
+### Phase 1 — Discovery & Gap Matrix
+
+1. Scan all source files in:
+   - `routes/`
+   - `app/Http/Controllers/`
+   - `app/Models/`
+   - `app/Jobs/`, `app/Console/Commands/`, `routes/console.php`
+   - `resources/js/pages/`, `resources/js/components/`, `resources/js/services/`, `resources/js/utils/`
+   - `database/migrations/`
+   - `docs/`
+2. Build a parity matrix:
+   - Feature
+   - Source files
+   - Target files
+   - Status (missing/in-progress/done)
+3. Output this matrix before coding.
+
+### Phase 2 — Foundation Setup
+
+1. Initialize Laravel + Inertia + React + TS app.
+2. Configure lint/format/type-check/test tooling.
+3. Configure env + config mapping for all external services.
+4. Set up queue + scheduler baseline.
+
+### Phase 3 — Domain & API Layer
+
+1. Create migrations and models.
+2. Implement middleware and role guards.
+3. Implement controllers/services for plants, exports, email jobs, templates, customers, docs, analytics, backups, translations.
+4. Add route definitions and request validation.
+
+### Phase 4 — Frontend Layer
+
+1. Implement layout/navigation and shared props.
+2. Implement page modules in this order:
+   - auth/settings
+   - plants list/detail + chart tabs
+   - reports and email jobs UI
+   - diagrams
+   - staff/admin modules
+3. Wire all API calls and state handling.
+
+### Phase 5 — Background Processing & Ops
+
+1. Implement scheduled commands/jobs:
+   - email jobs processing dispatcher
+   - backup scheduling job
+   - queue watchdog behavior
+2. Implement queue monitor endpoints/UI.
+3. Add deployment and runtime scripts equivalent to source behavior.
+
+### Phase 6 — Verification & Documentation
+
+1. Run automated checks:
+   - backend tests
+   - frontend build and type-check
+   - lint/format
+2. Produce migration notes and env template.
+3. Port/author operational docs for deploy, queue workers, backups, and email jobs.
+
+## Best-Practice Prompting Behaviors for You (Agent)
+
+When executing this rebuild:
+
+1. Always report:
+   - current phase
+   - completed parity items
+   - remaining blockers
+2. Before large refactors or schema changes, explain impact and rollback strategy.
+3. For every module, provide:
+   - implementation summary
+   - endpoints added/changed
+   - required env vars
+   - test coverage added
+4. Never proceed with guessed contracts if source code can be inspected.
+5. Maintain a file `REBUILD_PROGRESS.md` with objective evidence of parity.
+
+## Hardening / Improvement Constraints
+
+You may improve architecture where safe, but do not alter visible behavior. Mandatory improvements:
+
+- try to follow modular approach both on backend and frontend applications (if it is possible), apply best practices of modular monolith
+- move hardcoded API host/token into env/config
+- centralize HTTP clients with retries/timeouts/error normalization
+- enforce request validation and authorization policies consistently
+- avoid duplicate route definitions and document canonical paths
+
+
+## Deliverables (Required)
+
+1. Working full-stack app with matching features.
+2. `ENVIRONMENT_VARIABLES.md` listing all needed env vars with examples.
+3. `PARITY_MATRIX.md` proving each feature from source is mapped and implemented.
+4. `RUNBOOK.md` for deploy/restart/queue/scheduler operations.
+5. `KNOWN_DIFFERENCES.md` (must be empty or explicitly justified).
+
+## Acceptance Checklist
+
+Only mark complete when all are true:
+
+- [ ] auth + 2FA flows work
+- [ ] role-based access is enforced (admin/staff/customer etc.)
+- [ ] plants list/detail + charts + date switching + aggregated views work
+- [ ] events/controllers/diagrams display correctly
+- [ ] export (csv/xlsx/pdf) and email jobs (download/send-now/recurring) work
+- [ ] template management + assignments work
+- [ ] customer management + plant assignment works
+- [ ] queue monitor dashboard + controls work
+- [ ] backup settings + backup lifecycle works
+- [ ] translation and documentation modules work
+- [ ] test/build/lint/type-check pass
+- [ ] docs/runbooks complete
+
+## Output Contract
+
+For each phase, output:
+
+1. What you changed
+2. Files created/modified
+3. Commands run and results
+4. Remaining parity gaps
+
+Do not provide high-level theory only; execute and verify implementation.
+
+---
+
+End of prompt.

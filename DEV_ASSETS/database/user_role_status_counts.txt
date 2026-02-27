@@ -1,0 +1,6 @@
+('admin', 'new', 1)
+('customer', 'active', 14)
+('customer', 'new', 3)
+('installer', 'active', 1)
+('staff', 'active', 4)
+('staff', 'new', 2)

@@ -1,0 +1,26 @@
+# Root-level dependency/build artifacts
+**/node_modules/
+**/.next/
+**/vendor/
+
+# Environment / secrets
+backend/.env
+frontend/.env.local
+
+# Runtime/cache artifacts
+**/.phpunit.result.cache
+**/storage/logs/*.log
+**/storage/framework/cache/**
+**/storage/framework/sessions/**
+**/storage/framework/views/**
+
+# Local DB backups/runtime files
+backend/database/*.sqlite.pre-prod-backup
+.ems-start.pids.json
+
+# OS/editor clutter
+.DS_Store
+Thumbs.db
+
+# Local temporary analysis scripts
+tmp_*.py

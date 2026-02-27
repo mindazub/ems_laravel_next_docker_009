@@ -1,0 +1,1 @@
+This file mirrors DEV_ASSETS/master_prompt.txt and is kept for rebuild context. Do not edit manually unless migration prompt is revised.
